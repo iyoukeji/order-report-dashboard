@@ -7,13 +7,39 @@
       body, html{
         width: 100%;height: 100%;margin:0;font-family:"微软雅黑";
       }
-		  #l-map{
-		    height:100%;width:100%;
-		  }
+      #l-map{
+        height:100%;width:80%;
+        float:left;
+      }
+      #r-msg{
+        height:100%;
+        width:20%;
+        overflow-y: auto;
+        float:right;
+      }
+      #r-order .title{
+        width:100%;
+        padding:10px;
+        font-weight: bold;
+      }
+      #order-list{
+        width:100%;
+      }
+      #order-list .order{
+        width:100%;
+        padding:5px;
+        border-bottom:1px solid #999999;
+      }
     </style>
   </head>
   <body>
     <div id="l-map"></div>
+    <div id="r-order">
+      <div class="title">订单列表</div>
+      <div id="order-list">
+
+      </div>
+    </div>
     <script src="/socket.io/socket.io.js"></script>
     <script src="/js/jquery.min.js"></script>
     <script type="text/javascript" src="/js/audio.js"></script>
@@ -30,7 +56,22 @@
         var socket = io.connect();
         socket.on('message', function (msg) {
           myGeo.getPoint(msg.address.text, function (point) {
+              var labelStr = msg.title + '<br />'
+                      + '订单量：' + msg.amount + '升' + '<br />'
+                      + '送达时间：' + msg.arriveAt.date + ' ' + msg.arriveAt.time + '<br />'
+                      + '详细地址：' + msg.address.text;
+              //在右侧添加标签
+              var order = $('<div class="order"><span>' + labelStr + '</span></div>');
+              order.appendTo($('#order-list'));
+              //如果能解析到地址,在地图上显示
         	  if (point) {
+                //给右侧标签注册一个地图上查看的按钮
+                var btn = $('<div>地图上查看</div>');
+                btn.on('click',function(){
+                  map.centerAndZoom(point, 13);
+                });
+                btn.appendTo(order);
+                //在地图上显示
         	    var address = new BMap.Point(point.lng, point.lat);
         	    var marker = new BMap.Marker(point);
   		        map.addOverlay(marker);
@@ -40,7 +81,9 @@
     		        + '详细地址：' + msg.address.text, { offset: new BMap.Size(20, -10), background: '#5cb85c' }));
   		        map.centerAndZoom(address, 13);
   		        require('browser-audio').create('/asset/chongfenghao.mp3').play();
-        	  }
+        	  }else{
+                order.append('<div style="color:red;">该订单在地图上未显示</div>');
+              }
         	}, "大连市");
         });
       });
