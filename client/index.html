@@ -86,6 +86,20 @@
               }
         	}, "大连市");
         });
+        
+        var vehicles = {};
+        var vehicleIcon = new BMap.Icon("/img/vehicle.png", new BMap.Size(48, 48), {imageOffset: new BMap.Size(0, 0)});
+        socket.on('vehicle', function(msg) {
+          var vehiclePoint = new BMap.Point(msg.geoLocation.longitude, msg.geoLocation.latitude);
+          if (vehicles[msg.vehicleNumber]) {
+            vehicles[msg.vehicleNumber].setPosition(vehiclePoint);
+          } else {
+            var vehicleMarker = new BMap.Marker(vehiclePoint, { icon: vehicleIcon });
+            vehicleMarker.setLabel(new BMap.Label(msg.vehicleNumber, { offset: new BMap.Size(0, -10) }));
+            map.addOverlay(vehicleMarker);
+            vehicles[msg.vehicleNumber] = vehicleMarker;
+          }
+        });
       });
     </script>
   </body>

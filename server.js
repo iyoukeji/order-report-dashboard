@@ -24,6 +24,7 @@ var io = socketio.listen(server);
 router.use(bodyParser.json());
 
 router.use(express.static(path.resolve(__dirname, 'client')));
+
 router.post('/upload-data', function(req, res, next) {
   console.log(req.body);
   var geoAddress = req.body.entry.field_5;
@@ -52,6 +53,12 @@ router.post('/upload-data', function(req, res, next) {
   });
   res.send('success!');
 });
+
+router.post('/upload-location', function(req, res, next) {
+  broadcast('vehicle', req.body);
+  res.send(JSON.stringify({ status: 200 }));
+});
+
 var sockets = [];
 
 io.on('connection', function (socket) {
