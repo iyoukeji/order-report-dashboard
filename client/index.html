@@ -5,30 +5,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
       body, html{
-        width: 100%;height: 100%;margin:0;font-family:"微软雅黑";
+        width: 100%;height: 100%;margin:0px;padding:0px;font-family:"微软雅黑";
       }
       #l-map{
-        height:100%;width:80%;
-        float:left;
-      }
-      #r-msg{
         height:100%;
-        width:20%;
-        overflow-y: auto;
-        float:right;
+        margin-right:300px;
+        /*
+        left:0;
+        top:0;
+        position:absolute;
+        */
+      }
+      #r-order{
+        height:100%;
+        right:0;
+        top:0;
+        position:absolute;
+        width:300px;
+        font-size:14px;
       }
       #r-order .title{
         width:100%;
-        padding:10px;
         font-weight: bold;
+        border-bottom: 1px solid #999999;
+        padding:10px;
       }
       #order-list{
-        width:100%;
+        width:300px;
+        position: relative;
+        overflow: auto;
       }
       #order-list .order{
-        width:100%;
+        margin:10px 10px 0 10px;
+        background-color:#fefcb5;
+        border:1px solid #999999;
+      }
+      #order-list .order div{
+        line-height:18px;
+        padding:5px 5px 0px 5px;;
+      }
+      .btn-center-and-zoom{
+        cursor: pointer;
         padding:5px;
-        border-bottom:1px solid #999999;
+        margin:2px 5px 5px 5px;
+        display:inline-block;
+        background-color:#5399da;
+        color:#fff;
+        font-size:12px;
+        border-radius: 5px;
+      }
+      .error-no-show{
+        color:red;
+        padding:5px;
+        display:inline-block;
+        font-size:12px;
       }
     </style>
   </head>
@@ -37,7 +67,7 @@
     <div id="r-order">
       <div class="title">订单列表</div>
       <div id="order-list">
-
+        </div>
       </div>
     </div>
     <script src="/socket.io/socket.io.js"></script>
@@ -61,12 +91,12 @@
                       + '送达时间：' + msg.arriveAt.date + ' ' + msg.arriveAt.time + '<br />'
                       + '详细地址：' + msg.address.text;
               //在右侧添加标签
-              var order = $('<div class="order"><span>' + labelStr + '</span></div>');
+              var order = $('<div class="order"><div>' + labelStr + '</div></div>');
               order.appendTo($('#order-list'));
               //如果能解析到地址,在地图上显示
         	  if (point) {
                 //给右侧标签注册一个地图上查看的按钮
-                var btn = $('<div>地图上查看</div>');
+                var btn = $('<span class="btn-center-and-zoom">地图上查看</span>');
                 btn.on('click',function(){
                   map.centerAndZoom(point, 13);
                 });
@@ -75,14 +105,11 @@
         	    var address = new BMap.Point(point.lng, point.lat);
         	    var marker = new BMap.Marker(point);
   		        map.addOverlay(marker);
-  		        marker.setLabel(new BMap.Label(msg.title + '<br />' 
-  		          + '订单量：' + msg.amount + '升' + '<br />' 
-    		        + '送达时间：' + msg.arriveAt.date + ' ' + msg.arriveAt.time + '<br />' 
-    		        + '详细地址：' + msg.address.text, { offset: new BMap.Size(20, -10), background: '#5cb85c' }));
+  		        marker.setLabel(new BMap.Label(labelStr, { offset: new BMap.Size(20, -10), background: '#5cb85c' }));
   		        map.centerAndZoom(address, 13);
   		        require('browser-audio').create('/asset/chongfenghao.mp3').play();
         	  }else{
-                order.append('<div style="color:red;">该订单在地图上未显示</div>');
+                order.append('<span class="error-no-show">该订单在地图上未显示</span>');
               }
         	}, "大连市");
         });
