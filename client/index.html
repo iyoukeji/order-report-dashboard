@@ -44,6 +44,7 @@
     <script src="/js/jquery.min.js"></script>
     <script type="text/javascript" src="/js/audio.js"></script>
     <script type="text/javascript" src="/js/nosleep.js"></script>
+    <script type="text/javascript" src="/js/wgs2mars.js"></script>
     <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&amp;ak=DaqrOr0QQjstFxvQzc0ECGGE"></script>
     <script type="text/javascript">
       $(function ($) {
@@ -91,14 +92,20 @@
         var vehicleIcon = new BMap.Icon("/img/vehicle.png", new BMap.Size(48, 48), {imageOffset: new BMap.Size(0, 0)});
         socket.on('vehicle', function(msg) {
           var vehiclePoint = new BMap.Point(msg.geoLocation.longitude, msg.geoLocation.latitude);
-          if (vehicles[msg.vehicleNumber]) {
-            vehicles[msg.vehicleNumber].setPosition(vehiclePoint);
-          } else {
-            var vehicleMarker = new BMap.Marker(vehiclePoint, { icon: vehicleIcon });
-            vehicleMarker.setLabel(new BMap.Label(msg.vehicleNumber, { offset: new BMap.Size(0, -10) }));
-            map.addOverlay(vehicleMarker);
-            vehicles[msg.vehicleNumber] = vehicleMarker;
-          }
+          var convertor = new BMap.Convertor();
+          convertor.translate([vehiclePoint], 1, 5, function (data) {
+            if(data.status === 0) {
+              var realPoint = data.points[0];
+              if (vehicles[msg.vehicleNumber]) {
+                vehicles[msg.vehicleNumber].setPosition(realPoint);
+              } else {
+                var vehicleMarker = new BMap.Marker(realPoint, { icon: vehicleIcon });
+                vehicleMarker.setLabel(new BMap.Label(msg.vehicleNumber, { offset: new BMap.Size(0, -10) }));
+                map.addOverlay(vehicleMarker);
+                vehicles[msg.vehicleNumber] = vehicleMarker;
+              }
+            }
+          });
         });
       });
     </script>
