@@ -44,7 +44,6 @@
     <script src="/js/jquery.min.js"></script>
     <script type="text/javascript" src="/js/audio.js"></script>
     <script type="text/javascript" src="/js/nosleep.js"></script>
-    <script type="text/javascript" src="/js/wgs2mars.js"></script>
     <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&amp;ak=DaqrOr0QQjstFxvQzc0ECGGE"></script>
     <script type="text/javascript">
       $(function ($) {
@@ -89,18 +88,22 @@
         });
         
         var vehicles = {};
-        var vehicleIcon = new BMap.Icon("/img/vehicle.png", new BMap.Size(48, 48), {imageOffset: new BMap.Size(0, 0)});
+        var vehicleIcon = new BMap.Icon("/img/vehicle.png", new BMap.Size(48, 48));
         socket.on('vehicle', function(msg) {
           var vehiclePoint = new BMap.Point(msg.geoLocation.longitude, msg.geoLocation.latitude);
           var convertor = new BMap.Convertor();
-          convertor.translate([vehiclePoint], 1, 5, function (data) {
+          convertor.translate([vehiclePoint], 3, 5, function (data) {
             if(data.status === 0) {
               var realPoint = data.points[0];
               if (vehicles[msg.vehicleNumber]) {
                 vehicles[msg.vehicleNumber].setPosition(realPoint);
               } else {
                 var vehicleMarker = new BMap.Marker(realPoint, { icon: vehicleIcon });
-                vehicleMarker.setLabel(new BMap.Label(msg.vehicleNumber, { offset: new BMap.Size(0, -10) }));
+                var vehicleLabel = new BMap.Label(
+                  '<b>' + msg.vehicleNumber + ' ' + (msg.state == 'FREE' ? '空闲' : '配送中') + '</b><br />' 
+                  + '司机：' + msg.driverName  + '<br />'
+                  + '电话：' + msg.driverPhone, { offset: new BMap.Size(0, -45) });
+                vehicleMarker.setLabel(vehicleLabel);
                 map.addOverlay(vehicleMarker);
                 vehicles[msg.vehicleNumber] = vehicleMarker;
               }
